@@ -7,6 +7,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 import os
 #from  import ToastNotifier
 
+# Global variables, login information 
+
 week_day = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
 possible_marus = ["○", "◯", "〇", "⭕️", "⚪︎", "△", "△","×"]
@@ -35,6 +37,124 @@ def login(driver, district_num, vaccination_num, birthdate):
     shosai_yoyaku = driver.find_element_by_xpath("//a[@role='button']")
     shosai_yoyaku.click()
     sleep(3)
+
+
+def search_and_notify3(days_lst, driver, region_code, vaccine_code, birthdate, unopen_days):
+    rel_unopen_days = relativize_unopen_days(unopen_days)
+    for i, l in enumerate(days_lst):
+        if l.text.strip() != "×" and i not in rel_unopen_days:
+            #print([d.text.strip() for d in days_lst])
+            l.click()
+            print("Reservation opening found!!!")
+            print(datetime.now())
+            #print(driver.page_source)
+            click_time_and_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
+            break
+
+
+def click_time_and_submit(driver, region_code, vaccine_code, birthdate, unopen_days):
+    #print(driver.page_source)
+    time_slots = driver.find_elements_by_partial_link_text('残り')
+    time_slots2 = driver.find_elements_by_xpath("//a[@role='button']") # backup and also sends page back if reservation is full
+    if time_slots: 
+        time_slots[len(time_slots)//2].click()
+        print(driver.page_source)
+        # はい、していません is already checked
+        # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
+        sbmt_btn1 = driver.find_elements_by_xpath("//button[@type='submit']")
+        sbmt_btn2 = driver.find_elements_by_partial_link_text('予約内容確認')
+        if sbmt_btn1: 
+            sbmt_btn1[0].click()
+            final_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
+        elif sbmt_btn2:
+            sbmt_btn2[0].click()
+            final_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
+    elif time_slots2:
+        print(driver.page_source)
+        time_slots2[len(time_slots2)//2].click()
+        # はい、していません is already checked
+        # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
+        sbmt_btn1 = driver.find_elements_by_xpath("//button[@type='submit']")
+        sbmt_btn2 = driver.find_elements_by_partial_link_text('予約内容確認')
+        if sbmt_btn1:
+            sbmt_btn1[0].click()
+            final_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
+        elif sbmt_btn2:
+            sbmt_btn2[0].click()
+            final_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
+    
+
+    #else:
+        #back_btn = driver.find_element_by_partial_link_text('日付を')
+        #back_btn.click()
+        
+def final_submit(driver, region_code, vaccine_code, birthdate, unopen_days):
+    print(driver.page_source)
+    option1 = driver.find_elements_by_xpath("//button[@type='submit']")
+    if option1:
+        option1[0].click()
+        sleep(5)
+        login(driver, region_code, vaccine_code, birthdate)
+    else:
+        print(driver.page_source)
+        i = 0
+        while i < 5:
+            os.system('say "大至急よやくするボタンを押してください"') 
+            i += 1
+        login(driver, region_code, vaccine_code, birthdate)
+
+
+def relativize_unopen_days(unopen_days):
+    tday = datetime.today().day
+    relative_unopen_days = set()
+    for d in unopen_days:
+        new_d = d - tday
+        relative_unopen_days.add(new_d)
+    
+    return relative_unopen_days
+        
+        
+
+def find_days_of_week3(driver):
+    days_lst = []
+    """
+    driver.find_element_by_link_text('2021年06月').click()
+    sleep(1)
+    for symbol in possible_marus:
+        days_lst += driver.find_elements_by_partial_link_text('{}'.format(symbol))
+    """
+    for symbol in possible_marus:
+        days_lst += driver.find_elements_by_partial_link_text('{}'.format(symbol))
+    #for d in days_lst:
+    #    print(d.text)
+    #print(len(days_lst))
+    return days_lst
+
+
+def reserve_spot(driver, region_code, vaccine_code, birthdate, unopen_days):
+    #start_url = "https://www.vaccine.mrso.jp/sdftokyo/VisitNumbers/visitnoAuth/"
+    login(driver, region_code, vaccine_code, birthdate)
+    while True:
+        #driver.refresh()
+        days = find_days_of_week3(driver)
+        search_and_notify3(days, driver, region_code, vaccine_code, birthdate, unopen_days) # unavailable days in list form)
+        driver.refresh()
+        sleep(0.5)
+
+
+
+if __name__ == "__main__":
+    region_code = input("市区町村コードを記入ください: ")
+    vaccine_code = input("接種券コードを記入ください: ")
+    birthdate = input("生年月日を'年-月-日'の形式でハイフンで区切りながら半角数字で記入ください: ")
+    unopen_days0 = input("今月空いていない日を、日にちだけ、空白で分けながら半角数字で列挙してください:\n 例）今月の７日と１５日、１９日がだめな場合、　'7 15 19'と記入")
+    unopen_days = [int(x) for x in unopen_days0.split()]
+    driver = webdriver.Chrome(ChromeDriverManager().install())
+    reserve_spot(driver, region_code, vaccine_code, birthdate, unopen_days)
+# update search_days to include Xs, calculate which days are unavailable from datetime (as +i from today) and use enumerate to filter. 
+
+
+
 """
 def find_days_of_week(driver):
 
@@ -73,100 +193,7 @@ def search_and_notify(days_lst):
                 os.system('say "予約に空きがみつかりました"') 
                 i += 1
                 sleep(2)
-"""
 
-def search_and_notify(days_lst, driver):
-    if days_lst:
-        print([l.text.strip() for l in days_lst])
-        print("Reservation opening found!!!")
-        print(datetime.now())
-        i = 0
-        days_lst[0].click()
-        #print(driver.page_source)
-        click_time_and_submit(driver)
-        '''
-        while i < 3:
-            os.system('say "よやくが空きました"') 
-            i += 1
-            sleep(1)
-        '''
-
-def search_and_notify3(days_lst, driver, unopen_days):
-    rel_unopen_days = relativize_unopen_days(unopen_days)
-    for i, l in enumerate(days_lst):
-        if l.text.strip() != "×" and i not in rel_unopen_days:
-            #print([d.text.strip() for d in days_lst])
-            l.click()
-            print("Reservation opening found!!!")
-            print(datetime.now())
-            #print(driver.page_source)
-            click_time_and_submit(driver)
-            break
-        '''
-        while i < 3:
-            os.system('say "よやくが空きました"') 
-            i += 1
-            sleep(1)
-        '''
- 
-
-
-def click_time_and_submit(driver):
-    #print(driver.page_source)
-    time_slots = driver.find_elements_by_xpath("//a[@role='button']")
-    time_slots2 = driver.find_elements_by_partial_link_text('残り')
-    if time_slots2: 
-        time_slots2[len(time_slots2)//2].click()
-        print(driver.page_source)
-        # はい、していません is already checked
-        # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
-        sbmt_btn1 = driver.find_elements_by_xpath("//button[@type='submit']")
-        sbmt_btn2 = driver.find_elements_by_partial_link_text('予約内容確認')
-        if sbmt_btn1: 
-            sbmt_btn1[0].click()
-            final_submit(driver)
-        elif sbmt_btn2:
-            sbmt_btn2[0].click()
-            final_submit(driver)
-    elif time_slots:
-        print(driver.page_source)
-        time_slots[len(time_slots)//2].click()
-        # はい、していません is already checked
-        # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
-        sbmt_btn1 = driver.find_elements_by_xpath("//button[@type='submit']")
-        sbmt_btn2 = driver.find_elements_by_partial_link_text('予約内容確認')
-        if sbmt_btn1:
-            sbmt_btn1[0].click()
-            final_submit(driver)
-        elif sbmt_btn2:
-            sbmt_btn2[0].click()
-            final_submit(driver)
-    
-
-    #else:
-        #back_btn = driver.find_element_by_partial_link_text('日付を')
-        #back_btn.click()
-        
-def final_submit(driver):
-    print(driver.page_source)
-    option1 = driver.find_elements_by_xpath("//button[@type='submit']")
-    option2 = driver.find_elements_by_partial_link_text('予約する')
-    if option1:
-        option1[0].click()
-        sleep(5)
-        login(driver, "132217", "2100061262", "1999-05-14")
-    elif option2: 
-        option2[0].click()
-        login(driver, "132217", "2100061262", "1999-05-14")
-    else:
-        print(driver.page_source)
-        i = 0
-        while i < 5:
-            os.system('say "大至急よやくするボタンを押してください"') 
-            i += 1
-        login(driver, "132217", "2100061262", "1999-05-14")
-
-"""
 def find_days_of_week2(driver):
     i = 0
     today = datetime.today().weekday()
@@ -179,57 +206,3 @@ def find_days_of_week2(driver):
         print(d.text)
     return days_lst
 """
-
-def relativize_unopen_days(unopen_days):
-    tday = datetime.today().day
-    relative_unopen_days = set()
-    for d in unopen_days:
-        new_d = d - tday
-        relative_unopen_days.add(new_d)
-    
-    return relative_unopen_days
-        
-        
-
-
-def find_days_of_week3(driver):
-    days_lst = []
-    """
-    driver.find_element_by_link_text('2021年06月').click()
-    sleep(1)
-    for symbol in possible_marus:
-        days_lst += driver.find_elements_by_partial_link_text('{}'.format(symbol))
-    """
-    for symbol in possible_marus:
-        days_lst += driver.find_elements_by_partial_link_text('{}'.format(symbol))
-    #for d in days_lst:
-    #    print(d.text)
-    #print(len(days_lst))
-    return days_lst
-
-
-def reserve_spot(region_code, vaccine_code, birthdate):
-        #start_url = "https://www.vaccine.mrso.jp/sdftokyo/VisitNumbers/visitnoAuth/"
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    login(driver, region_code, vaccine_code, birthdate)
-    while True:
-        #driver.refresh()
-        days = find_days_of_week3(driver)
-        search_and_notify3(days, driver, [6, 8, 9, 10, 11, 13, 15, 16]) # unavailable days in list form)
-        driver.refresh()
-        sleep(0.5)
-
-
-
-if __name__ == "__main__":
-    #start_url = "https://www.vaccine.mrso.jp/sdftokyo/VisitNumbers/visitnoAuth/"
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    login(driver, "131041", "0032281428", "1999-04-30")
-    while True:
-        #driver.refresh()
-        days = find_days_of_week3(driver)
-        search_and_notify3(days, driver, [6, 8, 9, 10, 11, 13, 15, 16]) # unavailable days in list form)
-        driver.refresh()
-        sleep(0.5)
-
-# update search_days to include Xs, calculate which days are unavailable from datetime (as +i from today) and use enumerate to filter. 
