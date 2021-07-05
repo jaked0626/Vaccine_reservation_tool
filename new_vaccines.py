@@ -120,7 +120,6 @@ def find_days_of_week3(driver):
 
 
 def reserve_spot(driver, region_code, vaccine_code, birthdate, unopen_days):
-    #start_url = "https://www.vaccine.mrso.jp/sdftokyo/VisitNumbers/visitnoAuth/"
     login(driver, region_code, vaccine_code, birthdate)
     while True:
         #driver.refresh()
