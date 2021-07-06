@@ -56,7 +56,7 @@ def click_time_and_submit(driver, region_code, vaccine_code, birthdate, unopen_d
     time_slots2 = driver.find_elements_by_xpath("//a[@role='button']") # backup and also sends page back if reservation is full
     if time_slots: 
         time_slots[len(time_slots)//2].click()
-        print(driver.page_source)
+        #print(driver.page_source)
         # はい、していません is already checked
         # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
         sbmt_btn1 = driver.find_elements_by_xpath("//button[@type='submit']")
@@ -68,7 +68,7 @@ def click_time_and_submit(driver, region_code, vaccine_code, birthdate, unopen_d
             sbmt_btn2[0].click()
             final_submit(driver, region_code, vaccine_code, birthdate, unopen_days)
     elif time_slots2:
-        print(driver.page_source)
+        #print(driver.page_source)
         time_slots2[len(time_slots2)//2].click()
         # はい、していません is already checked
         # <button type="submit" class="btn btn-lg btn-warning center-block btn-next">予約内容確認</button>
