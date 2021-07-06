@@ -136,7 +136,7 @@ if __name__ == "__main__":
     birthdate = input("生年月日を'年-月-日'の形式でハイフンで区切りながら半角数字で記入ください: ")
     unopen_days0 = input("今月空いていない日を、日にちだけ、空白で分けながら半角数字で列挙してください.\n \
     例）今月の７日と１５日、１９日がだめな場合、　'7 15 19'と記入:\n")
-    unopen_days = set(unopen_days.split())
+    unopen_days = set(unopen_days0.split())
     driver = webdriver.Chrome(ChromeDriverManager().install())
     reserve_spot(driver, region_code, vaccine_code, birthdate, unopen_days)
 # update search_days to include Xs, calculate which days are unavailable from datetime (as +i from today) and use enumerate to filter. 
