@@ -5,7 +5,7 @@ selenium をつかって自動的にウェブページを随時更新し、空�
 使い方:
 1. Python をインストールする（Anaconda　というdistribution がおすすめ)
 2. コマンドラインから、selenium と webdriver_managerをインストールする　(run the code: 'pip install selenium/webdriver_manager' on command line)
-3. python3 new_vaccines.py と打つ
+3. python3 reserve_vaccine.py と打つ
 4. 指示通り、必要情報を記入する　
 
 注：はじめて起動する際は、一度手動でワクチン予約ホームページにログインし、カレンダーページまで進んでからご利用ください。さもなくばエラーでプログラムがexitします。
