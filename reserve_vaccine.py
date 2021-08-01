@@ -120,11 +120,14 @@ class VacReserve(object):
 
 
 def main():
-    region_code = input("市区町村コードを記入ください: ")
-    vaccine_code = input("接種券コードを記入ください: ")
-    birthdate = input("生年月日を'年-月-日'の形式でハイフンで区切りながら半角数字で記入ください: ")
-    unopen_days = input("今月空いていない日を、日にちだけ、空白で分けながら半角数字で列挙してください.\n \
-    例）今月の７日と１５日、１９日がだめな場合、　'7 15 19'と記入:\n")
+    region_code = input("市区町村コードを記入ください \nWrite your regional code: \n")
+    vaccine_code = input("\n接種券コードを記入ください \nWrite your vaccine code: \n")
+    birthdate = input("\n生年月日を'年-月-日'の形式でハイフンで区切りながら半角数字で記入ください \
+                      \nWrite your date of birth in the 'year-month-day' format: \n")
+    unopen_days = input("\n今月空いていない日を、日にちだけ、空白で分けながら半角数字で列挙してください.\
+                         \n例）今月の７日と１５日、１９日がだめな場合、　'7 15 19'と記入\
+                        \nList the days of the month you are unavailable in digits and separate each by a space.\
+                        \ne.g.) if you are unavailable on the 7th, 15th, and 19th, write '7 15 19': \n")
     driver = webdriver.Chrome(ChromeDriverManager().install())
     vac = VacReserve(driver, region_code, vaccine_code, birthdate, unopen_days)
     vac.reserve_main()
