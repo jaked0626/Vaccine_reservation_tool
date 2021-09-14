@@ -80,7 +80,7 @@ class VacReserve(object):
             
     def final_submit_page(self):
         print(self.driver.page_source)
-        option1 = driver.find_elements_by_xpath("//button[@type='submit']")
+        option1 = self.driver.find_elements_by_xpath("//button[@type='submit']")
         if option1:
             option1[0].click()
             sleep(5)
