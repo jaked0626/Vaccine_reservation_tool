@@ -41,7 +41,7 @@ class VacReserve(object):
     def find_openings(self):
         openings_lst = []
         for symbol in self.possible_marus:
-            self.days_lst += self.driver.find_elements_by_partial_link_text('{}'.format(symbol))
+            openings_lst += self.driver.find_elements_by_partial_link_text('{}'.format(symbol))
         #for d in days_lst:
         #    print(d.text)
         #print(len(days_lst))
